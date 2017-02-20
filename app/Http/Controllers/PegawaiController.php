@@ -46,24 +46,20 @@ class PegawaiController extends Controller
         ]); 
 
        
-         if($request->hasfile('Photo')){
-//mengambil file yang di upload
-$uploaded_Photo = $request->file('Photo');
-//mengambil extension file
-$extension = 
-$uploaded_Photo->getClientOriginalExtension();
-//membuat nama file random berikut extension
-$filename = md5(time() ) .'.'. $extension;
-//menyimpan covet ke folder public/img
-$destinationPath = public_path() . 
-DIRECTORY_SEPARATOR . 'img';
-$uploaded_Photo->move($destinationPath. $filename);
-//mengisi field cover di book dengan filename yang baru dibuat
-        
-//ganti field cover dengan cover yang abru
-$input->Photo = $filename;
-$input->save();
-}
+$file = Input::file('Photo');
+        $destinationPath = public_path().'/image/';
+        $filename = str_random(6).'_'.$file->getClientOriginalName();
+        $uploadSuccess = $file->move($destinationPath, $filename);
+
+        if(Input::hasFile('Photo')){
+           $mm = new Pegawai;
+           $mm->Nip = Input::get('Nip'); 
+           $mm->user_id = $user->id;  
+           $mm->jabatan_id = Input::get('jabatan_id'); 
+           $mm->golongan_id = Input::get('golongan_id'); 
+           $mm->Photo = $filename;
+           $mm->save();
+        }
         return redirect('pegawais');
     }
 
@@ -103,43 +99,23 @@ $input->save();
      */
     public function update(Request $request, $id)
     {
-        $pegawais = Pegawai::find($id);
+         $pegawais = Pegawai::find($id);
 
-         if($request->hasfile('Photo')){
-//mengambil file yang di upload
-$uploaded_Photo = $request->file('Photo');
-//mengambil extension file
-$extension = 
-$uploaded_Photo->getClientOriginalExtension();
-//membuat nama file random berikut extension
-$filename = md5(time() ) .'.'. $extension;
-//menyimpan covet ke folder public/img
-$destinationPath = public_path() . 
-DIRECTORY_SEPARATOR . 'img';
-$uploaded_Photo->move($destinationPath. $filename);
-//mengisi field cover di book dengan filename yang baru dibuat
-if($pegawais->Photo) {
-    $old_cover = $pegawais->Photo;
-    $filepath = public_path() . DIRECTORY_SEPARATOR . 'img' .
-    DIRECTORY_SEPARATOR . $pegawais->Photo;
-    try{
-        file::delete($filepath);
-    } catch (fileNotFoundException $e) {
-            //file sudah dihapus/tidak ada
-    }
-}
-//ganti field cover dengan cover yang abru
-$pegawais->Photo = $filename;
-$pegawais->save();
-}
+        if(Request::hasFile('Photo')){
+            $file = Request::file('Photo');
+            $destinationPath = public_path().'/image/';
+            $filename = str_random(6).'_'.$file->getClientOriginalName();
+            $uploadSuccess = $file->move($destinationPath, $filename);
+        }
+        
         $pegawais->Nip = Request::get('Nip'); 
         $pegawais->jabatan_id = Request::get('jabatan_id'); 
         $pegawais->golongan_id = Request::get('golongan_id'); 
         $pegawais->Photo = $filename;
         $pegawais->save();
-        
         return redirect('pegawais');
     }
+
 
     /**
      * Remove the specified resource from storage.
